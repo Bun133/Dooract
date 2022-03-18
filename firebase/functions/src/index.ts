@@ -1,34 +1,55 @@
 import * as functions from "firebase-functions";
-import {initializeApp} from "firebase/app"
-import {getDatabase, ref, get} from "firebase/database";
+import {ref, get, set} from "firebase/database";
+import {handleRequestAdmin} from "./dooractUtils";
 
-import {requireAdmin} from "./dooractUtils";
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-
-const firebaseConfig = require("../../../config/firebaseConfig.json");
-const app = initializeApp(firebaseConfig);
-
-export const helloWorld = functions.https.onRequest((request, response) => {
-    functions.logger.info("Hello logs!", {structuredData: true});
-    response.send("Hello from Firebase!");
+const firebaseConfig = require("../../../config/firebase-admin.json");
+const admin = require("firebase-admin");
+// Initialize Firebase App using Admin SDK.
+// using this object should be checked auth by handleRequestAdmin
+const app = admin.initializeApp({
+    credential: admin.credential.cert(firebaseConfig),
+    databaseURL: firebaseConfig["databaseURL"]
 });
 
 export const getRealTimeDB = functions.https.onRequest((request, response) => {
-    requireAdmin(request.body["AdminKey"], () => {
-        const db = getDatabase(app);
-        let name = request.body["dbName"]
-        if (name) {
-            get(ref(db, name)).then(data => {
-                response.send(data)
+    handleRequestAdmin(request, response, () => {
+        const db = app.database();
+        const name = request.body["dbPath"];
+        const r = ref(db, name);
+        get(r).then(data => {
+            response.status(200).send({data: data});
+        }).catch(error => {
+            response.status(500).send({error: error});
+        });
+    })
+});
+
+/**
+ * Force Set Data using Admin SDK
+ */
+export const setRealTimeDB = functions.https.onRequest((request, response) => {
+    handleRequestAdmin(request, response, () => {
+        const db = app.database();
+        let name = request.body["dbPath"];
+        let data = request.body["data"];
+        if (name && data) {
+            let r = ref(db, name)
+            set(r, data).then(data => {
+                response.status(200).send({
+                    "status": true
+                })
             }).catch(err => {
-                response.send(err)
+                response.status(500).send({
+                    "status": false,
+                    "error": err
+                })
             })
         } else {
-            response.send("dbName is required");
+            response.status(400).send({
+                "status": false,
+                "error": "dbName and data are required"
+            })
         }
-    }, () => {
-        response.send("AdminKey is required");
     })
 });

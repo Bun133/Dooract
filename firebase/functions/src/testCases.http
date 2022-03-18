@@ -1,0 +1,22 @@
+###
+# get DBData from database
+GET http://localhost:5001/dooract-backend/us-central1/getRealTimeDB
+Content-Type: application/json
+
+{
+  "AdminKey": "randomStringToPredictToGainAccess",
+  "dbPath": "/"
+}
+
+###
+# set RealTimeDB
+GET http://localhost:5001/dooract-backend/us-central1/setRealTimeDB
+Content-Type: application/json
+
+{
+  "AdminKey": "randomStringToPredictToGainAccess",
+  "dbPath": "/",
+  "data": {
+    "key": "value"
+  }
+}
