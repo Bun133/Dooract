@@ -17,6 +17,31 @@ Content-Type: application/json
   "AdminKey": "randomStringToPredictToGainAccess",
   "dbPath": "/",
   "data": {
-    "key": "value"
+    "key": "value",
+    "key2": "value2"
   }
+}
+
+###
+# update RealTimeDB
+GET http://localhost:5001/dooract-backend/us-central1/updateRealTimeDB
+Content-Type: application/json
+
+{
+  "AdminKey": "randomStringToPredictToGainAccess",
+  "dbPath": "/",
+  "data": {
+    "key": "updated"
+  }
+}
+
+###
+# transaction RealTimeDB
+GET http://localhost:5001/dooract-backend/us-central1/transactionRealTimeDB
+Content-Type: application/json
+
+{
+  "AdminKey": "randomStringToPredictToGainAccess",
+  "dbPath": "/key",
+  "data": "(current_value) => {return (current_value || 0) + 1;}"
 }
