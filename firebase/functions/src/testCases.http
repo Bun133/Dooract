@@ -45,3 +45,16 @@ Content-Type: application/json
   "dbPath": "/key",
   "data": "(current_value) => {return (current_value || 0) + 1;}"
 }
+
+###
+# push RealTimeDB
+GET http://localhost:5001/dooract-backend/us-central1/pushRealTimeDB
+Content-Type: application/json
+
+{
+  "AdminKey": "randomStringToPredictToGainAccess",
+  "dbPath": "/array",
+  "data": {
+    "key": "value"
+  }
+}

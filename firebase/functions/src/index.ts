@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
-import {ref, get, set, update, runTransaction} from "firebase/database";
+import {ref, get, set, update, runTransaction, push} from "firebase/database";
 import {handleRequestAdmin} from "./dooractUtils";
-import {DataSnapshot, TransactionResult} from "@firebase/database";
+import {DatabaseReference, DataSnapshot, TransactionResult} from "@firebase/database";
 
 
 const firebaseConfig = require("../../../config/firebase-admin.json");
@@ -77,7 +77,7 @@ export const updateRealTimeDB = functions.https.onRequest((request, response) =>
     })
 });
 
-function updateRealTimeDBFunc(dbPath: string, data: object): Promise<void> {
+function updateRealTimeDBFunc(dbPath: string, data: any): Promise<void> {
     if (dbPath && data) {
         const db = app.database();
         const r = ref(db, dbPath);
@@ -109,6 +109,30 @@ function transactionRealTimeDBFunc(dbPath: string, data: (arg0: any) => unknown)
         const db = app.database();
         const r = ref(db, dbPath);
         return runTransaction(r, data);
+    }
+    return Promise.reject("dbPath and data are required");
+}
+
+export const pushRealTimeDB = functions.https.onRequest((request, response) => {
+    handleRequestAdmin(request, response, () => {
+        pushRealTimeDBFunc(request.body["dbPath"], request.body["data"]).then(data => {
+            response.status(200).send({
+                "status": true
+            })
+        }).catch(err => {
+            response.status(400).send({
+                "status": false,
+                "error": err
+            })
+        })
+    })
+});
+
+function pushRealTimeDBFunc(dbPath: string, data: any): Promise<DatabaseReference> {
+    if (dbPath && data) {
+        const db = app.database();
+        const r = ref(db, dbPath);
+        return push(r, data).then();
     }
     return Promise.reject("dbPath and data are required");
 }
